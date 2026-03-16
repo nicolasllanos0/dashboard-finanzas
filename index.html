@@ -166,7 +166,7 @@ td.mes-col{text-align:center;font-weight:700;position:sticky;left:0}
 <div class="header">
   <div>
     <div class="h1">&#9889; Dashboard Electricidad 2026</div>
-    <div class="sub">Mes ejecutado: Enero &nbsp;|&nbsp; TF vs Ctrl 2025 &nbsp;|&nbsp; En M CLP &bull; MWh &bull; CLP/kWh</div>
+    <div class="sub">Mes ejecutado: Enero &nbsp;|&nbsp; En M CLP &bull; MWh &bull; CLP/kWh</div>
   </div>
   <div class="badge" id="fechaBadge"></div>
 </div>
@@ -379,8 +379,8 @@ function renderKPIs(dataset){
     <div class="kpi-card gasto">
       <div class="kpi-label">Gasto Full Year TF (M CLP)</div>
       <div class="kpi-val">${fm(totG.tf)}</div>
-      <div class="kpi-sub">vs Ctrl 2025 ${varBadge(totG.var_tf_c25)}</div>
-      <div class="kpi-sub" style="margin-top:2px">vs Plan ${varBadge(vGPlan)}</div>
+      <div class="kpi-sub">vs Ctrl 2025: ${fm(totG.c25)} ${varBadge(totG.var_tf_c25)}</div>
+      <div class="kpi-sub" style="margin-top:2px">vs Plan: ${fm(totG.plan)} ${varBadge(vGPlan)}</div>
     </div>
     <div class="kpi-card consumos">
       <div class="kpi-label">Consumos YTD Ctrl 2026 (MWh)</div>
@@ -391,14 +391,14 @@ function renderKPIs(dataset){
     <div class="kpi-card consumos">
       <div class="kpi-label">Consumos Full Year TF (MWh)</div>
       <div class="kpi-val">${fm(totC.tf)}</div>
-      <div class="kpi-sub">vs Ctrl 2025 ${varBadge(totC.var_tf_c25)}</div>
-      <div class="kpi-sub" style="margin-top:2px">vs Plan ${varBadge(vCPlan)}</div>
+      <div class="kpi-sub">vs Ctrl 2025: ${fm(totC.c25)} ${varBadge(totC.var_tf_c25)}</div>
+      <div class="kpi-sub" style="margin-top:2px">vs Plan: ${fm(totC.plan)} ${varBadge(vCPlan)}</div>
     </div>
     <div class="kpi-card precio">
       <div class="kpi-label">Precio Medio TF (CLP/kWh)</div>
       <div class="kpi-val">${fm(totP.tf,2)}</div>
-      <div class="kpi-sub">vs Ctrl 2025 ${varBadge(totP.var_tf_c25)}</div>
-      <div class="kpi-sub" style="margin-top:2px">vs Plan ${varBadge(totP.plan?(totP.tf-totP.plan)/Math.abs(totP.plan)*100:null)}</div>
+      <div class="kpi-sub">vs Ctrl 2025: ${fm(totP.c25,2)} ${varBadge(totP.var_tf_c25)}</div>
+      <div class="kpi-sub" style="margin-top:2px">vs Plan: ${fm(totP.plan,2)} ${varBadge(totP.plan?(totP.tf-totP.plan)/Math.abs(totP.plan)*100:null)}</div>
     </div>
   `;
 }
