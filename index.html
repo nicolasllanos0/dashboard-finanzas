@@ -249,7 +249,22 @@ td.mes-col{text-align:center;font-weight:700;position:sticky;left:0}
 
 <!-- VISTA PxQ -->
 <div id="tab-pxq" class="tab-content">
-  <!-- Banner explicativo -->
+
+  <!-- Barra de filtros (misma logica que Resumen) -->
+  <div class="filtro-bar">
+    <label>&#127968; Formato:</label>
+    <select id="pxq-filtro-formato" class="filtro-select" onchange="aplicarFiltrosPxQ()">
+      <option value="">Todos</option>
+    </select>
+    <label>&#9889; Tarifa:</label>
+    <select id="pxq-filtro-tarifa" class="filtro-select" onchange="aplicarFiltrosPxQ()">
+      <option value="">Todas</option>
+    </select>
+    <button class="filtro-reset" onclick="resetFiltrosPxQ()">&#10006; Limpiar</button>
+    <span class="filtro-tag" id="pxq-filtro-label">Total Empresa</span>
+  </div>
+
+  <!-- Banner P=PxQ -->
   <div class="pxq-banner">
     <span class="pxq-pill pxq-g">&#128181; Gasto (M CLP)</span>
     <span class="pxq-eq">=</span>
@@ -257,22 +272,25 @@ td.mes-col{text-align:center;font-weight:700;position:sticky;left:0}
     <span class="pxq-eq">&times;</span>
     <span class="pxq-pill pxq-c">&#9889; Consumos (MWh)</span>
   </div>
+
   <!-- GASTO arriba, ancho completo -->
   <div class="pxq-top">
-    <div class="section-title" style="background:#1565C0">&#128181; Gasto &mdash; M CLP &nbsp;|&nbsp; Total Empresa</div>
+    <div class="section-title" id="pxq-title-gasto" style="background:#1565C0">&#128181; Gasto &mdash; M CLP &nbsp;|&nbsp; Total Empresa</div>
     <div class="tbl-wrap"><table id="pxq_tbl_gasto"></table></div>
   </div>
+
   <!-- CONSUMOS y PRECIO lado a lado -->
   <div class="pxq-bottom">
     <div class="pxq-panel">
-      <div class="section-title" style="background:#1B5E20">&#9889; Consumos &mdash; MWh</div>
+      <div class="section-title" id="pxq-title-consumos" style="background:#1B5E20">&#9889; Consumos &mdash; MWh</div>
       <div class="tbl-wrap"><table id="pxq_tbl_consumos"></table></div>
     </div>
     <div class="pxq-panel">
-      <div class="section-title" style="background:#7B3F00">&#128200; Precio Medio &mdash; CLP/kWh</div>
+      <div class="section-title" id="pxq-title-precio" style="background:#7B3F00">&#128200; Precio Medio &mdash; CLP/kWh</div>
       <div class="tbl-wrap"><table id="pxq_tbl_precio"></table></div>
     </div>
   </div>
+
 </div>
 
 <script>
@@ -289,7 +307,6 @@ const varBadge = (v,invertColor=false) => {
 };
 
 const tot = D.total;  // alias global para P×Q y otras vistas
-let pxqBuilt = false;
 function showTab(name){
   document.querySelectorAll('.tab-content').forEach(e=>e.classList.remove('active'));
   document.getElementById('tab-'+name).classList.add('active');
@@ -297,13 +314,8 @@ function showTab(name){
     const names=['resumen','pxq'];
     t.classList.toggle('active', names[i]===name);
   });
-  // Construir vista P×Q la primera vez que se abre (lazy)
-  if(name==='pxq' && !pxqBuilt){
-    buildTable('pxq_tbl_gasto',    tot.gasto,    'M CLP');
-    buildTable('pxq_tbl_consumos', tot.consumos, 'MWh');
-    buildTable('pxq_tbl_precio',   tot.precio,   'CLP/kWh');
-    pxqBuilt = true;
-  }
+  // Renderizar P×Q cada vez que se abre (respeta filtros activos)
+  if(name==='pxq') renderPxQ();
 }
 
 // ============================================================
@@ -546,6 +558,64 @@ function resetFiltros(){
 
 // Render inicial
 renderResumen();
+
+// ============================================================
+// VISTA P×Q — Filtros y render
+// ============================================================
+
+// Inicializar dropdowns P×Q con los mismos valores que Resumen
+(function initFiltrosPxQ(){
+  const selFmt = document.getElementById('pxq-filtro-formato');
+  const selTar = document.getElementById('pxq-filtro-tarifa');
+  if(!selFmt || !selTar) return;
+  (D.formatos||[]).forEach(f=>{
+    const o = document.createElement('option'); o.value=f; o.textContent=f;
+    selFmt.appendChild(o);
+  });
+  (D.tarifas||[]).forEach(t=>{
+    const o = document.createElement('option'); o.value=t; o.textContent=t;
+    selTar.appendChild(o);
+  });
+})();
+
+// Obtener dataset activo para P×Q
+function getPxqDataset(){
+  const fmt = (document.getElementById('pxq-filtro-formato')||{}).value||'';
+  const tar = (document.getElementById('pxq-filtro-tarifa')||{}).value||'';
+  if(tar && D.por_tarifa && D.por_tarifa[tar]) return { data: D.por_tarifa[tar], label:'Tarifa: '+tar };
+  if(fmt && D.por_formato && D.por_formato[fmt]) return { data: D.por_formato[fmt], label:'Formato: '+fmt };
+  return { data: D.total, label:'Total Empresa' };
+}
+
+// Render completo de las 3 tablas P×Q
+function renderPxQ(){
+  const {data, label} = getPxqDataset();
+
+  // Actualizar tag y titulos de seccion
+  const tagEl = document.getElementById('pxq-filtro-label');
+  if(tagEl) tagEl.textContent = label;
+
+  const tG = document.getElementById('pxq-title-gasto');
+  const tC = document.getElementById('pxq-title-consumos');
+  const tP = document.getElementById('pxq-title-precio');
+  if(tG) tG.innerHTML = `&#128181; Gasto &mdash; M CLP &nbsp;|&nbsp; ${label}`;
+  if(tC) tC.innerHTML = `&#9889; Consumos &mdash; MWh &nbsp;|&nbsp; ${label}`;
+  if(tP) tP.innerHTML = `&#128200; Precio Medio &mdash; CLP/kWh &nbsp;|&nbsp; ${label}`;
+
+  // Reconstruir las 3 tablas con el dataset filtrado
+  buildTable('pxq_tbl_gasto',    data.gasto,    'M CLP');
+  buildTable('pxq_tbl_consumos', data.consumos, 'MWh');
+  buildTable('pxq_tbl_precio',   data.precio,   'CLP/kWh');
+}
+
+function aplicarFiltrosPxQ(){ renderPxQ(); }
+function resetFiltrosPxQ(){
+  const sf = document.getElementById('pxq-filtro-formato');
+  const st = document.getElementById('pxq-filtro-tarifa');
+  if(sf) sf.value='';
+  if(st) st.value='';
+  renderPxQ();
+}
 
 // --- Tabla mensual ---
 function buildTable(tableId, data, unit, fmt='#,##0.0'){
