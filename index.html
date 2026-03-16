@@ -496,6 +496,14 @@ function renderQSummary(containerId, detData, unit, title){
     margin-bottom:6px">&#128181; ${title} (${unit})</div>${html}`;
 }
 
+// ── Constantes tabla nominal (deben estar antes del primer renderResumen) ─────
+const NOM_METRICS = [
+  { key:'gasto',    label:'&#128181; Gasto',    unit:'M CLP',    dec:1 },
+  { key:'consumos', label:'&#9889; Consumos',   unit:'MWh',      dec:1 },
+  { key:'precio',   label:'&#128200; Precio',   unit:'CLP/kWh',  dec:2 },
+];
+let nomMetricIdx = 0;
+
 // ── Render principal Resumen ──────────────────────────────────
 function renderResumen(){
   const {data, label} = getDataset();
@@ -630,12 +638,6 @@ function buildTable(tableId, data, unit, fmt='#,##0.0'){
 // ============================================================
 // TABLA NOMINAL MENSUAL
 // ============================================================
-const NOM_METRICS = [
-  { key:'gasto',    label:'&#128181; Gasto',    unit:'M CLP',    dec:1 },
-  { key:'consumos', label:'&#9889; Consumos',   unit:'MWh',      dec:1 },
-  { key:'precio',   label:'&#128200; Precio',   unit:'CLP/kWh',  dec:2 },
-];
-let nomMetricIdx = 0;
 
 function renderTablaNominal(dataset){
   const el = document.getElementById('resumen_tabla_nominal');
